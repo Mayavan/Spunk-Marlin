@@ -372,6 +372,8 @@ public:
 
 private:
 
+  static void G100();
+
   static void G0_G1(
     #if IS_SCARA || defined(G0_FEEDRATE)
       const bool fast_move=false

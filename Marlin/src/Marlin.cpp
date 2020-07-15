@@ -57,6 +57,8 @@
 #include "gcode/parser.h"
 #include "gcode/queue.h"
 
+#include "module/stepper_async.h"
+
 #if ENABLED(TOUCH_BUTTONS)
   #include "feature/touch/xpt2046.h"
 #endif
@@ -962,7 +964,9 @@ void setup() {
 
   endstops.init();          // Init endstops and pullups
 
-  stepper.init();           // Init stepper. This enables interrupts!
+  //stepper.init();           // Init stepper. This enables interrupts!
+  
+  stepper_async::getInstance().init();
 
   #if HAS_SERVOS
     servo_init();
@@ -1127,6 +1131,7 @@ void setup() {
 void loop() {
 
   for (;;) {
+    stepper_async::getInstance().controller_thread();
 
     idle(); // Do an idle first so boot is slightly faster
 

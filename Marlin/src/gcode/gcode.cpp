@@ -221,6 +221,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
   // Handle a known G, M, or T
   switch (parser.command_letter) {
     case 'G': switch (parser.codenum) {
+      case 100:
+        G100();
+      break;
 
       case 0: case 1: G0_G1(                                      // G0: Fast Move, G1: Linear Move
                         #if IS_SCARA || defined(G0_FEEDRATE)
