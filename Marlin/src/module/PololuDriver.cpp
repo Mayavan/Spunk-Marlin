@@ -17,6 +17,20 @@ PololuStepper::PololuStepper(int _stepPin, int _dirPin, int _enablePin)
 
 }
 
+void PololuStepper::smartStep()
+{
+	if (stepped)
+	{
+		digitalWrite(stepPin, LOW);
+		stepped = false;
+	}
+	else
+	{
+		digitalWrite(stepPin, HIGH);
+		stepped = true;
+	}
+}
+
 //Stel richting handmatig in
 void PololuStepper::setDir(short _dir)
 {

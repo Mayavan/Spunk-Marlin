@@ -14,6 +14,8 @@ class PololuStepper
 
 		void setDir(short _dir);	//Bepaal Draairichting
 
+		void smartStep();
+
 		bool stepOn();				//Step Handmatig
 									//(stepOff moet daarna komen)
 
