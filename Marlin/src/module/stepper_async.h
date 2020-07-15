@@ -1,8 +1,11 @@
 #define INITIAL_X 0
-#define INITIAL_Y 0
+#define INITIAL_Y 180
 
-#define MAX_VELOCITY_X 360.0  // Angular velocity in degrees/second
-#define MAX_VELOCITY_Y 360.0  // Angular velocity in degrees/second
+#define GEAR_RATIO_X 2.33
+#define GEAR_RATIO_Y 1
+
+#define MAX_VELOCITY_X 360.0*GEAR_RATIO_X  // Angular velocity in degrees/second
+#define MAX_VELOCITY_Y 360.0*GEAR_RATIO_Y  // Angular velocity in degrees/second
 #define TIME_TO_MAX_VELOCITY 0.15  // in seconds
 
 #define ACCELERATION_X MAX_VELOCITY_X/TIME_TO_MAX_VELOCITY

@@ -11,18 +11,15 @@ PololuStepper motor_y = PololuStepper(Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN);
 
 int i=0; 
 int stepped = 0;
-float cp = 0;
-float cv = 0;
-float tp = 0;
-int inter=0;
 
-void stepper_async::init(){
+void stepper_async::init() {
   current_x_state = INITIAL_X;
   current_y_state = INITIAL_Y;
   current_x_velocity = 0;
   current_y_velocity = 0;
-  target_x_state = 0;
-  target_y_state = 0;
+  target_x_state = INITIAL_X;
+  target_y_state = INITIAL_Y;
+  interval = 0;
 }
 
 void stepper_async::controller_thread(){ 
@@ -50,22 +47,14 @@ void stepper_async::controller_thread(){
       current_x_velocity = current_x_velocity + (ACCELERATION_X*interval/1.0e6);
       if(current_x_velocity>MAX_VELOCITY_X) current_x_velocity = MAX_VELOCITY_X;
     }
-
-    // DEBUGGING
-    cv=current_x_velocity;
-    inter = interval;
-    tp = target_x_state;
-    cp = current_x_state;
     
     step_time_period = 1/(current_x_velocity*MICROSTEPS_PER_STEP);
     if(interval > step_time_period)
     {
       stepped++;
-      motor_x.stepOn();
-      delayMicroseconds(500);
-      motor_x.stepOff();
+      motor_x.smartStep();
       // Update Current position
-      current_x_state = current_x_state + DEGREE_PER_MICROSTEP * direction;
+      current_x_state = current_x_state + ((DEGREE_PER_MICROSTEP/2.0) * direction)/GEAR_RATIO_X;
       previous_step_time_us = getTimeMicroseconds();
     }
 
@@ -103,11 +92,9 @@ void stepper_async::controller_thread(){
     step_time_period = 1/(current_y_velocity*MICROSTEPS_PER_STEP);
     if(interval > step_time_period)
     {
-      motor_y.stepOn();
-      delayMicroseconds(500);
-      motor_y.stepOff();
+      motor_y.smartStep();
       // Update Current position
-      current_y_state = current_y_state + DEGREE_PER_MICROSTEP * direction;
+      current_y_state = current_y_state + ((DEGREE_PER_MICROSTEP/2.0) * direction)/GEAR_RATIO_Y;
       previous_step_time_us = getTimeMicroseconds();
     }
 
@@ -137,14 +124,19 @@ void stepper_async::set_async_target_y(float y) {
 void stepper_async::print_log(float z){
   if(z==1)
     SERIAL_ECHOLNPAIR_F("i:", i);
-  if(z==2)
-    SERIAL_ECHOLNPAIR_F("Current Velocity:", cv);
+  if(z==2){
+    SERIAL_ECHOLNPAIR_F("Current X Velocity:", current_x_velocity);
+    SERIAL_ECHOLNPAIR_F("Current Y Velocity:", current_y_velocity);
+  }
   if(z==3)
-    SERIAL_ECHOLNPAIR_F("Interval:", inter);
-  if(z==4)
-    SERIAL_ECHOLNPAIR_F("Current Position:", cp);
+    SERIAL_ECHOLNPAIR_F("Interval:", interval);
+  if(z==4){
+    SERIAL_ECHOLNPAIR_F("Current X Position:", current_x_state);
+    SERIAL_ECHOLNPAIR_F("Current Y Position:", current_y_state);
+  }
   if(z==5)
-    SERIAL_ECHOLNPAIR_F("Target Position:", tp);
+    SERIAL_ECHOLNPAIR_F("Target X Position:", target_x_state);
+    SERIAL_ECHOLNPAIR_F("Target Y Position:", target_y_state);
   if(z==6)
     SERIAL_ECHOLNPAIR_F("Stepped:", stepped);
   if(z==7)
