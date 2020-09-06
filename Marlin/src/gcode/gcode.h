@@ -373,6 +373,11 @@ public:
 private:
 
   static void G100();
+  static void G101();
+  static void G102();
+  static void G103();
+  static void G104();
+  static void G105();
 
   static void G0_G1(
     #if IS_SCARA || defined(G0_FEEDRATE)

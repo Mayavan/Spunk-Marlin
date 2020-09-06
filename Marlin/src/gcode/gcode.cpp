@@ -224,7 +224,21 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       case 100:
         G100();
       break;
-
+      case 101:
+        G101();
+      break;
+      case 102:
+        G102();
+      break;
+      case 103:
+        G103();
+      break;
+      case 104:
+        G104();
+      break;
+      case 105:
+        G105();
+      break;
       case 0: case 1: G0_G1(                                      // G0: Fast Move, G1: Linear Move
                         #if IS_SCARA || defined(G0_FEEDRATE)
                           parser.codenum == 0

@@ -20,6 +20,10 @@ void stepper_async::init() {
   target_x_state = INITIAL_X;
   target_y_state = INITIAL_Y;
   interval = 0;
+  max_velocity_x = MAX_VELOCITY_X;
+  max_velocity_y = MAX_VELOCITY_Y;
+  acceleration_x = ACCELERATION_X;
+  acceleration_y = ACCELERATION_Y;
 }
 
 void stepper_async::controller_thread(){ 
@@ -32,20 +36,20 @@ void stepper_async::controller_thread(){
     direction = (amount>0)?1:-1;
     motor_x.setDir(direction);
 
-    float decelerate_tolerence_estimate = (target_x_state - (current_x_state+current_x_velocity+(ACCELERATION_X * (INTEGRAL_FREQUENCY+1)/(2*INTEGRAL_FREQUENCY))));
+    float decelerate_tolerence_estimate = (target_x_state - (current_x_state+current_x_velocity+(acceleration_x * (INTEGRAL_FREQUENCY+1)/(2*INTEGRAL_FREQUENCY))));
     
     // Update velocity
     if(abs(decelerate_tolerence_estimate)<TOLERENCE) // Deccelerate
     {
       interval = getTimeMicroseconds()-previous_step_time_us;
-      current_x_velocity = current_x_velocity - (ACCELERATION_X*interval/1.0e6);
+      current_x_velocity = current_x_velocity - (acceleration_x*interval/1.0e6);
       if(current_x_velocity<0) current_x_velocity = 0;
     }
-    else if(current_x_velocity<MAX_VELOCITY_X)
+    else if(current_x_velocity<max_velocity_x)
     {
       interval = getTimeMicroseconds()-previous_step_time_us;
-      current_x_velocity = current_x_velocity + (ACCELERATION_X*interval/1.0e6);
-      if(current_x_velocity>MAX_VELOCITY_X) current_x_velocity = MAX_VELOCITY_X;
+      current_x_velocity = current_x_velocity + (acceleration_x*interval/1.0e6);
+      if(current_x_velocity>max_velocity_x) current_x_velocity = max_velocity_x;
     }
     
     step_time_period = 1/(current_x_velocity*MICROSTEPS_PER_STEP);
@@ -73,20 +77,20 @@ void stepper_async::controller_thread(){
     direction = (amount>0)?1:-1;
     motor_y.setDir(direction);
 
-    float decelerate_tolerence_estimate = (target_y_state - (current_y_state+current_y_velocity+(ACCELERATION_Y * (INTEGRAL_FREQUENCY+1)/(2*INTEGRAL_FREQUENCY))));
+    float decelerate_tolerence_estimate = (target_y_state - (current_y_state+current_y_velocity+(acceleration_y * (INTEGRAL_FREQUENCY+1)/(2*INTEGRAL_FREQUENCY))));
     
     // Update velocity
     if(abs(decelerate_tolerence_estimate)<TOLERENCE) // Deccelerate
     {
       interval = getTimeMicroseconds()-previous_step_time_us;
-      current_y_velocity = current_y_velocity - (ACCELERATION_Y*interval/1.0e6);
+      current_y_velocity = current_y_velocity - (acceleration_y*interval/1.0e6);
       if(current_y_velocity<0) current_y_velocity = 0;
     }
-    else if(current_y_velocity<MAX_VELOCITY_Y)
+    else if(current_y_velocity<max_velocity_y)
     {
       interval = getTimeMicroseconds()-previous_step_time_us;
-      current_y_velocity = current_y_velocity + (ACCELERATION_Y*interval/1.0e6);
-      if(current_y_velocity>MAX_VELOCITY_Y) current_y_velocity = MAX_VELOCITY_Y;
+      current_y_velocity = current_y_velocity + (acceleration_y*interval/1.0e6);
+      if(current_y_velocity>max_velocity_y) current_y_velocity = max_velocity_y;
     }
 
     step_time_period = 1/(current_y_velocity*MICROSTEPS_PER_STEP);
@@ -107,6 +111,7 @@ void stepper_async::controller_thread(){
 
 void stepper_async::set_async_target_x(float x) {
   motor_x.enable();
+  motor_y.enable();
   target_x_state = x;
 
   SERIAL_ECHOLNPGM("Values are set");
@@ -114,6 +119,7 @@ void stepper_async::set_async_target_x(float x) {
 }
 
 void stepper_async::set_async_target_y(float y) {
+  motor_x.enable();
   motor_y.enable();
   target_y_state = y;
 
@@ -143,4 +149,42 @@ void stepper_async::print_log(float z){
     SERIAL_ECHOLNPAIR_F("direction:", direction);
   if(z==8)
     SERIAL_ECHOLNPAIR_F("DEGREE_PER_MICROSTEP:", DEGREE_PER_MICROSTEP);
+}
+
+void stepper_async::set_velocity_x(float x) {
+  max_velocity_x = x * GEAR_RATIO_X;
+
+  SERIAL_ECHOLNPGM("Values are set");
+  SERIAL_ECHOLNPAIR_F("x:", max_velocity_x);
+}
+
+void stepper_async::set_velocity_y(float y) {
+  max_velocity_y = y * GEAR_RATIO_Y;
+
+  SERIAL_ECHOLNPGM("Values are set");
+  SERIAL_ECHOLNPAIR_F("y:", max_velocity_y);
+}
+
+void stepper_async::set_acceleration_x(float x) {
+  acceleration_x = x * GEAR_RATIO_X;
+
+  SERIAL_ECHOLNPGM("Values are set");
+  SERIAL_ECHOLNPAIR_F("x:", acceleration_x);
+}
+
+void stepper_async::set_acceleration_y(float y) {
+  acceleration_y = y * GEAR_RATIO_Y;
+
+  SERIAL_ECHOLNPGM("Values are set");
+  SERIAL_ECHOLNPAIR_F("y:", acceleration_y);
+}
+
+void stepper_async::set_current_x(float x) {
+  current_x_state = x;
+  target_x_state = x;
+}
+
+void stepper_async::set_current_y(float y) {
+  current_y_state = y;
+  target_y_state = y;
 }
